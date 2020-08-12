@@ -1,21 +1,26 @@
 import requests
 
 def getCharacterPlanetInfo(name):
-  r = requests.get('https://swapi.dev/api/people/?search='+name)
-  if(r.json()['count'] == 0):
+  characterResponse = requests.get('https://swapi.dev/api/people/?search='+name).json()
+  if(characterResponse['count'] == 0):
     return {'error':'notFound'}
 
   result = []
 
-  for c in r.json()['results']:
-    planetUrl = c['homeworld']
+  for character in characterResponse['results']:
+    planetUrl = character['homeworld']
 
-    r = requests.get(planetUrl)
-    json = r.json()
-    planet = json['name']
-    population = json['population']
-    climate = json['climate']
+    planetInfo = getPlanetInfoOnUrl(planetUrl)
 
-    result.append({'character':c['name'],'planetName':planet,'planetPopulation':population,'planetClimate':climate})
+    result.append({'character':character['name'],'planetName':planetInfo['name'],'planetPopulation':planetInfo['population'],'planetClimate':planetInfo['climate']})
 
   return result
+
+def getPlanetInfoOnUrl(url):
+  planetResponse = requests.get(url).json()
+
+  planet = planetResponse['name']
+  population = planetResponse['population']
+  climate = planetResponse['climate']
+
+  return {'name':planet,'population':population,'climate':climate}
